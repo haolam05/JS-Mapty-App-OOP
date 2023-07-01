@@ -10,12 +10,17 @@ const inputElevation = document.querySelector('.form__input--elevation');
 
 class Workout {
   date = new Date();
-  id = Date.now();
+  id = `${Date.now()}`;
+  clicks = 0;
 
   constructor(coords, distance, duration) {
     this.coords = coords; // [lat, lng]
     this.distance = distance; // km
     this.duration = duration; // min
+  }
+
+  click() {
+    this.clicks++;
   }
 
   _setDescription() {
@@ -65,11 +70,13 @@ class App {
   #map;
   #mapEvent;
   #workouts = [];
+  #mapZoomLevel = 13;
 
   constructor() {
     this.#getPosition();
     form.addEventListener('submit', this.#newWorkout.bind(this));
     inputType.addEventListener('change', this.#toggleElevationField);
+    containerWorkouts.addEventListener('click', this.#scrollToPopup.bind(this));
   }
 
   #getPosition() {
@@ -214,7 +221,7 @@ class App {
   }
 
   #setMapview(coords) {
-    this.#map = L.map('map').setView(coords, 13);
+    this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
   }
 
   #addTileLayerToMap() {
@@ -231,6 +238,18 @@ class App {
   #resetAllFormInputs() {
     // prettier-ignore
     inputDistance.value = inputDuration.value = inputCadence.value = inputElevation.value = '';
+  }
+
+  #scrollToPopup(e) {
+    const workoutEl = e.target.closest('.workout');
+    if (!workoutEl) return;
+    const workout = this.#workouts.find(w => w.id === workoutEl.dataset.id);
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      duration: 1,
+    });
+    workout.clicks++;
+    console.log(workout);
   }
 }
 const app = new App();
