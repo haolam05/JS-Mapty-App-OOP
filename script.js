@@ -74,6 +74,7 @@ class App {
 
   constructor() {
     this.#getPosition();
+    this.#getLocalStorage();
     form.addEventListener('submit', this.#newWorkout.bind(this));
     inputType.addEventListener('change', this.#toggleElevationField);
     containerWorkouts.addEventListener('click', this.#scrollToPopup.bind(this));
@@ -93,6 +94,7 @@ class App {
     this.#setMapview([latitude, longitude]);
     this.#addTileLayerToMap();
     this.#registerEventToDisplayForm();
+    this.#workouts.forEach(workout => this.#renderWorkoutMarker(workout));
   }
 
   #showForm(e) {
@@ -141,6 +143,7 @@ class App {
     this.#renderWorkoutMarker(workout);
     this.#renderWorkoutOnList(workout);
     this.#hideForm();
+    this.#setLocalStorage();
   }
 
   #renderWorkoutMarker(workout) {
@@ -248,8 +251,23 @@ class App {
       animate: true,
       duration: 1,
     });
-    workout.clicks++;
-    console.log(workout);
+    // workout.clicks++; NOT work bc we lost prototype chain when convert from JSON back to object
+  }
+
+  #setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  #getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    if (!data) return;
+    this.#workouts = data;
+    this.#workouts.forEach(workout => this.#renderWorkoutOnList(workout));
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 const app = new App();
