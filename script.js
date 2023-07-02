@@ -297,7 +297,7 @@ class App {
   }
 
   #updateDeleteAllBtn() {
-    deleteAllWorkouts.style.opacity = this.#workouts.length === 0 ? '0' : '100';
+    deleteAllWorkouts.style.opacity = this.#workouts.length === 0 ? '0' : '1';
   }
 
   reset() {
