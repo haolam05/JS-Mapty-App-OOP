@@ -77,7 +77,7 @@ class App {
     this.#getLocalStorage();
     form.addEventListener('submit', this.#newWorkout.bind(this));
     inputType.addEventListener('change', this.#toggleElevationField);
-    containerWorkouts.addEventListener('click', this.#scrollToPopup.bind(this));
+    containerWorkouts.addEventListener('click', this.#wHandler.bind(this));
   }
 
   #getPosition() {
@@ -147,7 +147,8 @@ class App {
   }
 
   #renderWorkoutMarker(workout) {
-    L.marker(workout.coords)
+    const marker = L.marker(workout.coords);
+    marker
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -167,6 +168,7 @@ class App {
   #renderWorkoutOnList(workout) {
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
+        <div class="workout__delete">❌</div>
         <h2 class="workout__title">${workout.description}</h2>
         <div class="workout__details">
           <span class="workout__icon">${
@@ -243,10 +245,28 @@ class App {
     inputDistance.value = inputDuration.value = inputCadence.value = inputElevation.value = '';
   }
 
-  #scrollToPopup(e) {
+  #wHandler(e) {
+    // workoutClickHandler
     const workoutEl = e.target.closest('.workout');
     if (!workoutEl) return;
     const workout = this.#workouts.find(w => w.id === workoutEl.dataset.id);
+
+    if (e.target.classList.contains('workout__delete')) {
+      workoutEl.remove();
+      return this.#deleteWorkout(workout);
+    }
+
+    this.#scrollToPopup(workout);
+  }
+
+  #deleteWorkout(workout) {
+    const idx = this.#workouts.findIndex(el => el === workout);
+    this.#workouts.splice(idx, 1);
+    this.#setLocalStorage();
+    location.reload();
+  }
+
+  #scrollToPopup(workout) {
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
       duration: 1,
